@@ -2512,7 +2512,10 @@ SYSCALL_DEFINE5(prctl, int, option, unsigned long, arg2, unsigned long, arg3,
 		error = prctl_get_tid_address(me, (int __user * __user *)arg2);
 		break;
 	case PR_SET_CHILD_SUBREAPER:
+		/* Serialize packed flags against tree propagation and fork. */
+		write_lock_irq(&tasklist_lock);
 		me->signal->is_child_subreaper = !!arg2;
+		write_unlock_irq(&tasklist_lock);
 		if (!arg2)
 			break;
 
