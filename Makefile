@@ -1024,6 +1024,12 @@ KBUILD_AFLAGS	+= -fno-lto
 export CC_FLAGS_LTO
 endif
 
+# Fast S23 test builds retain the ABI configuration and CFI.
+ifeq ($(S23_FAST_BUILD),1)
+KBUILD_CFLAGS += -O1
+KBUILD_LDFLAGS += --lto-O1
+endif
+
 ifdef CONFIG_CFI_CLANG
 CC_FLAGS_CFI	:= -fsanitize=cfi \
 		   -fsanitize-cfi-cross-dso \

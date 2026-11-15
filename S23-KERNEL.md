@@ -46,7 +46,8 @@ git submodule update --init
 CLANG_DIR=/absolute/path/to/clang-r450784e JOBS=8 scripts/build-s23.sh
 ```
 
-The output is `out-s23/arch/arm64/boot/Image`. ThinLTO and CFI are enabled, with stock-style O2 optimization.
+The output is `out-s23/arch/arm64/boot/Image`. ThinLTO and CFI are enabled. Test builds default to compiler O1 and LTO O1.
+After hardware validation, `S23_FAST_BUILD=0` enables the configured O2 build.
 KernelSU is built in (`CONFIG_KSU=y`) with its manager and policy support enabled.
 
 ## Validate and package

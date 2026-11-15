@@ -13,8 +13,15 @@ export KBUILD_BUILD_VERSION=1
 export KBUILD_BUILD_TIMESTAMP="$(git log -1 --format=%cD)"
 OUT_DIR=${OUT_DIR:-out-s23}
 JOBS=${JOBS:-8}
+S23_FAST_BUILD=${S23_FAST_BUILD:-1}
+mkdir -p "$OUT_DIR"
+if [[ "$S23_FAST_BUILD" == 1 ]]; then
+  printf "%s\n" "test: compiler O1, ThinLTO O1, CFI enabled" > "$OUT_DIR/s23-build-mode.txt"
+else
+  printf "%s\n" "optimized: compiler O2, ThinLTO default optimization, CFI enabled" > "$OUT_DIR/s23-build-mode.txt"
+fi
 args=(O="$OUT_DIR" ARCH=arm64 LLVM=1 LLVM_IAS=1
       CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
-      LOCALVERSION= KCFLAGS=-D__ANDROID_COMMON_KERNEL__)
+      LOCALVERSION= S23_FAST_BUILD="$S23_FAST_BUILD" KCFLAGS=-D__ANDROID_COMMON_KERNEL__)
 make "${args[@]}" gki_defconfig
 make -j"$JOBS" "${args[@]}" Image modules

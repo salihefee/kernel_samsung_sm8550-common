@@ -31,6 +31,7 @@ manifest = dict(
     kernelsu_source=git('-C', 'KernelSU-Next', 'rev-parse', 'HEAD'),
     kernelsu_version='v3.4.2 / 33355',
     compiler='Google Clang r450784e / 14.0.7',
+    optimization=(build / 's23-build-mode.txt').read_text().strip(),
     installer_source=git('-C', str(installer.resolve()), 'rev-parse', 'HEAD'),
     image_sha256=hashlib.sha256(data).hexdigest(),
     module_count=audit['module_count'],
