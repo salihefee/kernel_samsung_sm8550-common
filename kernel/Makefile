@@ -139,6 +139,10 @@ KCOV_INSTRUMENT_stackleak.o := n
 
 obj-$(CONFIG_SCF_TORTURE_TEST) += scftorture.o
 
+# ThinLTO cache keys do not inspect files referenced by module asm .incbin.
+# Include the configuration digest in that asm so changed blobs invalidate it.
+CFLAGS_configs.o += -DIKCONFIG_DATA_HASH=\"$(shell sha256sum $(KCONFIG_CONFIG) | cut -d ' ' -f1)\"
+
 $(obj)/configs.o: $(obj)/config_data.gz
 
 targets += config_data config_data.gz

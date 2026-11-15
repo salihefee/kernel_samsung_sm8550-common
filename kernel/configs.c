@@ -22,6 +22,7 @@
  */
 asm (
 "	.pushsection .rodata, \"a\"		\n"
+"	.ascii \"" IKCONFIG_DATA_HASH "\"\n"
 "	.ascii \"IKCFG_ST\"			\n"
 "	.global kernel_config_data		\n"
 "kernel_config_data:				\n"
