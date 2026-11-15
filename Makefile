@@ -992,6 +992,9 @@ endif
 ifdef CONFIG_LTO_CLANG
 ifdef CONFIG_LTO_CLANG_THIN
 CC_FLAGS_LTO	:= -flto=thin -fsplit-lto-unit
+# Keep custom S23 builds within workstation memory limits.
+THINLTO_JOBS ?= 8
+KBUILD_LDFLAGS += --thinlto-jobs=$(THINLTO_JOBS) --thinlto-cache-dir=$(objtree)/.thinlto-cache
 else
 CC_FLAGS_LTO	:= -flto
 endif
