@@ -6278,7 +6278,6 @@ static int cgroup_css_set_fork(struct kernel_clone_args *kargs)
 	spin_lock_irq(&css_set_lock);
 	cset = task_css_set(current);
 	get_css_set(cset);
-	kargs->kill_seq = cset->dfl_cgrp->kill_seq;
 	spin_unlock_irq(&css_set_lock);
 
 	if (!(kargs->flags & CLONE_INTO_CGROUP)) {
@@ -6329,7 +6328,6 @@ static int cgroup_css_set_fork(struct kernel_clone_args *kargs)
 	put_css_set(cset);
 	fput(f);
 	kargs->cgrp = dst_cgrp;
-	kargs->kill_seq = dst_cgrp->kill_seq;
 	return ret;
 
 err:
