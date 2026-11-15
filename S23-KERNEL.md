@@ -12,6 +12,8 @@ the existing boot header and ramdisk are repacked by AnyKernel3.
 - KernelSU Next: submodule pinned to v3.4.2,
   `4c706b5938665866ebe16944a481a7b91e3396af`, version 33355.
 - Compiler: Google Clang r450784e / 14.0.7, matching EZA1's compiler generation.
+- BTF metadata: Android build-tools pahole 1.23, commit
+  `083e34d8c2c4239be4967172427268c267585951`, matching EZA1's pahole version.
 - Installer: voltage-dmxq/AnyKernel3, commit
   `db39ee20d5118a5453dcabb71f7939cb1affb297`, the template used by fsrb.
 
@@ -30,6 +32,10 @@ the adaptations and build fixes.
 - Timed tty breaks share the existing write waitqueue.
 - KEYCTL_READ sorts the complete serial list before truncation, hiding
   address-dependent traversal ordering without enlarging public key structures.
+- Unicode maps keep their public size; RCU teardown state is allocated privately.
+- USB audio uses existing endpoint padding for new URB bounds state.
+- CPU capability exports retain the original 66-entry ABI prefix, with new
+  capabilities appended without renumbering old entries.
 - The old skb hash export and Samsung input-booster event notifier are retained.
 - Vendor module CRC checking rejects mismatches; the fork's unconditional
   acceptance of mismatched versions has been removed.
@@ -43,7 +49,9 @@ pinned compiler. `bc`, flex, bison, OpenSSL development files and pahole are nee
 
 ```sh
 git submodule update --init
-CLANG_DIR=/absolute/path/to/clang-r450784e JOBS=8 scripts/build-s23.sh
+CLANG_DIR=/absolute/path/to/clang-r450784e \
+PAHOLE=/absolute/path/to/android13-build-tools/bin/pahole \
+JOBS=8 scripts/build-s23.sh
 ```
 
 The output is `out-s23/arch/arm64/boot/Image`. ThinLTO and CFI are enabled. Test builds default to compiler O1 and LTO O1.

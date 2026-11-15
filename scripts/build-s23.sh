@@ -22,6 +22,6 @@ else
 fi
 args=(O="$OUT_DIR" ARCH=arm64 LLVM=1 LLVM_IAS=1
       CROSS_COMPILE=aarch64-linux-gnu- CROSS_COMPILE_COMPAT=arm-linux-gnueabi-
-      LOCALVERSION= S23_FAST_BUILD="$S23_FAST_BUILD" KCFLAGS=-D__ANDROID_COMMON_KERNEL__)
+      LOCALVERSION= PAHOLE="${PAHOLE:-pahole}" S23_FAST_BUILD="$S23_FAST_BUILD" KCFLAGS=-D__ANDROID_COMMON_KERNEL__)
 make "${args[@]}" gki_defconfig
 make -j"$JOBS" "${args[@]}" Image modules
