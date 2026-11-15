@@ -9,7 +9,8 @@ import struct
 import sys
 from elftools.elf.elffile import ELFFile
 
-firmware, build, report = map(Path, sys.argv[1:])
+firmware, build, report = map(Path, sys.argv[1:4])
+ramdisk = Path(sys.argv[4]) if len(sys.argv) > 4 else None
 exports = {}
 for line in (build / 'Module.symvers').read_text().splitlines():
     crc, name, provider, *_ = line.split()
@@ -17,9 +18,12 @@ for line in (build / 'Module.symvers').read_text().splitlines():
 
 modules = []
 stock_exports = {}
-for partition in ('system_dlkm', 'vendor_dlkm'):
-    for path in sorted((firmware / partition).rglob('*.ko')):
-        name = str(path.relative_to(firmware))
+roots = [(partition, firmware / partition) for partition in ('system_dlkm', 'vendor_dlkm')]
+if ramdisk:
+    roots.append(('vendor_boot', ramdisk))
+for partition, root in roots:
+    for path in sorted(root.rglob('*.ko')):
+        name = str(Path(partition) / path.relative_to(root))
         with path.open('rb') as stream:
             elf = ELFFile(stream)
             section = elf.get_section_by_name('__versions')
