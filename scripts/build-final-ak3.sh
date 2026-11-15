@@ -65,8 +65,9 @@ make -j"$JOBS" "${args[@]}" Image modules
 
 "$PYTHON" scripts/check-s23-modules.py "$FIRMWARE" "$OUT_DIR" "$OUT_DIR/abi.json" "$VENDOR_RAMDISK"
 bpftool -j btf dump file "$OUT_DIR/vmlinux" format raw > "$OUT_DIR/btf.json"
+"$PYTHON" scripts/check-s23-btf.py "$OUT_DIR/btf.json" "$OUT_DIR/btf-metadata.json"
 "$PYTHON" scripts/check-s23-usb-layout.py "$STOCK_BTF" "$OUT_DIR/btf.json" "$OUT_DIR/usb-layout.json"
-ZIP="$DIST_DIR/S23-EZA1-5.15.225-KSUNext-3.4.2-O3-FULL-LTO.zip"
+ZIP="$DIST_DIR/S23-EZA1-5.15.225-KSUNext-3.4.2-O3-FULL-LTO-BTF-FIX.zip"
 "$PYTHON" scripts/package-s23.py "$OUT_DIR" "$ANYKERNEL_DIR" "$OUT_DIR/abi.json" "$ZIP" "$OUT_DIR/usb-layout.json"
 (cd "$DIST_DIR" && sha256sum "$(basename "$ZIP")" > "$(basename "$ZIP").sha256")
 cp "$OUT_DIR/abi.json" "$DIST_DIR/optimized-abi.json"

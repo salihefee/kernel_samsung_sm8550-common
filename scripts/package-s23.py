@@ -17,6 +17,9 @@ if not all(item["passed"] for item in usb_layout):
 audit = json.loads(report.read_text())
 if audit['crc_mismatches'] or audit['missing_symbols']:
     raise SystemExit('Refusing to package: vendor module ABI audit failed')
+btf_report = build / 'btf-metadata.json'
+subprocess.run([sys.executable, 'scripts/check-s23-btf.py',
+                str(build / 'btf.json'), str(btf_report)], check=True)
 image = build / 'arch/arm64/boot/Image'
 data = image.read_bytes()
 assert data[56:60] == b'ARM\x64', 'Expected uncompressed arm64 Image'
@@ -47,6 +50,7 @@ manifest = dict(
     kernel_import_checks=audit['kernel_import_checks'],
     hardware_boot_tested=False,
     private_usb_layout_verified=True,
+    btf_metadata_verified=True,
 )
 script = '''### AnyKernel3 -- S23 EZA1 KernelSU Next
 properties() { '
@@ -77,6 +81,12 @@ model=$(getprop ro.boot.em.model);
 [ "$model" = "SM-S911B" ] || abort "Unsupported hardware: $model (requires SM-S911B)";
 ui_print "S23 EZA1 / KernelSU Next v3.4.2";
 split_boot;
+# These diagnostics owned the entire originally empty v4 boot header cmdline.
+# Remove them after collecting the trace; preserve all other boot headers.
+if grep -q '^cmdline=.*s23_bpf_' "$split_img/header"; then
+  ui_print "Removing temporary S23 BPF boot tracing";
+  sed -i 's/^cmdline=.*/cmdline=/' "$split_img/header";
+fi;
 flash_boot;
 '''
 output.parent.mkdir(parents=True, exist_ok=True)
@@ -93,6 +103,7 @@ with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as arch
     archive.write(image, 'Image')
     archive.writestr('kernel.config', embedded)
     archive.write(usb_report, 'usb-layout-checks.json')
+    archive.write(btf_report, 'btf-metadata-checks.json')
     archive.writestr('build-manifest.json', json.dumps(manifest, indent=2) + '\n')
 with zipfile.ZipFile(output) as archive:
     assert archive.testzip() is None

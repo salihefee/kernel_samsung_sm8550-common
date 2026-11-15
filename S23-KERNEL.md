@@ -14,6 +14,13 @@ the existing boot header and ramdisk are repacked by AnyKernel3.
 - Compiler: Google Clang r450784e / 14.0.7, matching EZA1's compiler generation.
 - BTF metadata: Android build-tools pahole 1.23, commit
   `083e34d8c2c4239be4967172427268c267585951`, matching EZA1's pahole version.
+  Full LTO requires `--skip_encoding_btf_vars`: this encoder otherwise emits
+  overlapping per-CPU variables, making vmlinux BTF invalid and Android's
+  BPF loader reboot the phone. Type/function BTF stays enabled; only optional
+  per-CPU VAR/DATASEC introspection metadata is omitted. O3, full LTO, CFI,
+  and the BPF verifier stay enabled. `check-s23-btf.py` gates packaging against
+  invalid DATASEC ranges. The corrected optimized ZIP has a `BTF-FIX` suffix
+  and removes the temporary S23 diagnostic boot-header arguments.
 - Installer: voltage-dmxq/AnyKernel3, commit
   `db39ee20d5118a5453dcabb71f7939cb1affb297`, the template used by fsrb.
 
