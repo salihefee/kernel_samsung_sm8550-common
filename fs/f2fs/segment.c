@@ -3896,7 +3896,8 @@ void __update_summary_of_block(struct f2fs_sb_info *sbi,
 	/* change the current segment */
 	if (segno != curseg->segno) {
 		curseg->next_segno = segno;
-		change_curseg(sbi, type, true);
+		if (change_curseg(sbi, type))
+			goto out;
 	}
 
 	curseg->next_blkoff = GET_BLKOFF_FROM_SEG0(sbi, blkaddr);
@@ -3905,10 +3906,12 @@ void __update_summary_of_block(struct f2fs_sb_info *sbi,
 	/* restore current segment */
 	if (old_cursegno != curseg->segno) {
 		curseg->next_segno = old_cursegno;
-		change_curseg(sbi, type, true);
+		if (change_curseg(sbi, type))
+			goto out;
 	}
 	curseg->next_blkoff = old_blkoff;
 
+out:
 	up_write(&sit_i->sentry_lock);
 	mutex_unlock(&curseg->curseg_mutex);
 	f2fs_up_write(&SM_I(sbi)->curseg_lock);
