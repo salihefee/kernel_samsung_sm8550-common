@@ -15,6 +15,7 @@ OUT_DIR=${OUT_DIR:-out-s23}
 JOBS=${JOBS:-8}
 S23_FAST_BUILD=${S23_FAST_BUILD:-1}
 mkdir -p "$OUT_DIR"
+git rev-parse HEAD > "$OUT_DIR/s23-source-commit.txt"
 if [[ "$S23_FAST_BUILD" == 1 ]]; then
   printf "%s\n" "test: compiler O1, ThinLTO O1, CFI enabled" > "$OUT_DIR/s23-build-mode.txt"
 else

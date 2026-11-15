@@ -27,7 +27,9 @@ def git(*args):
 
 manifest = dict(
     device='SM-S911B / dm1q', vendor='S911BXXS8EZA1',
-    kernel_release=release, kernel_source=git('rev-parse', 'HEAD'),
+    kernel_release=release,
+    kernel_source=(build / 's23-source-commit.txt').read_text().strip(),
+    repository_source=git('rev-parse', 'HEAD'),
     kernelsu_source=git('-C', 'KernelSU-Next', 'rev-parse', 'HEAD'),
     kernelsu_version='v3.4.2 / 33355',
     compiler='Google Clang r450784e / 14.0.7',
@@ -76,6 +78,7 @@ with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as arch
             if path.is_file():
                 archive.write(path, str(path.relative_to(installer)))
     archive.writestr('anykernel.sh', script)
+    archive.write(installer / 'LICENSE', 'LICENSE.AnyKernel3')
     archive.write(image, 'Image')
     archive.writestr('build-manifest.json', json.dumps(manifest, indent=2) + '\n')
 with zipfile.ZipFile(output) as archive:
