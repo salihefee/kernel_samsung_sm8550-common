@@ -37,6 +37,8 @@ the adaptations and build fixes.
 - CPU capability exports retain the original 66-entry ABI prefix, with new
   capabilities appended without renumbering old entries.
 - The old skb hash export and Samsung input-booster event notifier are retained.
+- The embedded configuration reports the actual build rather than the fork's
+  unrelated stock-config substitute.
 - Vendor module CRC checking rejects mismatches; the fork's unconditional
   acceptance of mismatched versions has been removed.
 - Samsung hardware/debug drivers are permitted to load. Only stock zram and
