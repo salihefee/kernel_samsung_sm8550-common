@@ -406,6 +406,10 @@ struct cgroup {
 	int nr_populated_threaded_children;
 
 	int nr_threaded_children;	/* # of live threaded child cgroups */
+#ifndef __GENKSYMS__
+	/* Fits the four-byte hole before kn on the frozen arm64 ABI. */
+	unsigned int kill_seq;
+#endif
 
 	struct kernfs_node *kn;		/* cgroup kernfs entry */
 	struct cgroup_file procs_file;	/* handle for "cgroup.procs" */
