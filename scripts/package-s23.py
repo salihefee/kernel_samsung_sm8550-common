@@ -80,7 +80,10 @@ with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as arch
     for root in ('META-INF', 'tools'):
         for path in sorted((installer / root).rglob('*')):
             if path.is_file():
-                archive.write(path, str(path.relative_to(installer)))
+                name = str(path.relative_to(installer))
+                archive.write(path, name)
+                if name == 'META-INF/com/google/android/update-binary':
+                    archive.getinfo(name).external_attr = 0o100755 << 16
     archive.writestr('anykernel.sh', script)
     archive.write(installer / 'LICENSE', 'LICENSE.AnyKernel3')
     archive.write(image, 'Image')
