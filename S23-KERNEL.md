@@ -68,9 +68,11 @@ partitions and the early-boot vendor modules must be checked.
 
 ```sh
 python3 scripts/check-s23-modules.py /path/to/EZA1 out-s23 abi.json /path/to/vendor-ramdisk
-python3 scripts/package-s23.py out-s23 /path/to/AnyKernel3 abi.json output.zip
+bpftool -j btf dump file out-s23/vmlinux format raw > built-btf.json
+python3 scripts/check-s23-usb-layout.py stock-btf.json built-btf.json usb-layout.json
+python3 scripts/package-s23.py out-s23 /path/to/AnyKernel3 abi.json output.zip usb-layout.json
 ```
 
-Packaging refuses a failed module ABI report. A passing static audit is not a
+Packaging refuses a failed module ABI report or a failed private USB layout report. A passing static audit is not a
 hardware boot test. Keep the known-working EZA1/UN1CA boot image available for
 recovery. Install the matching official KernelSU Next v3.4.2 manager APK.
