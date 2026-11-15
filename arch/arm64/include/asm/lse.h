@@ -16,7 +16,12 @@
 #include <asm/atomic_lse.h>
 #include <asm/cpucaps.h>
 
+#ifdef __GENKSYMS__
+/* Match the frozen vendor prefix declared in cpufeature.h. */
+extern struct static_key_false cpu_hwcap_keys[66];
+#else
 extern struct static_key_false cpu_hwcap_keys[ARM64_NCAPS];
+#endif
 extern struct static_key_false arm64_const_caps_ready;
 
 static inline bool system_uses_lse_atomics(void)
