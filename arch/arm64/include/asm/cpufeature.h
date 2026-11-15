@@ -7,6 +7,14 @@
 #define __ASM_CPUFEATURE_H
 
 #include <asm/cpucaps.h>
+
+#ifdef __GENKSYMS__
+/* Existing vendor modules address the frozen 66-entry array prefix.
+ * New capabilities append, preserving all old indexes and both bitmap words.
+ */
+#undef ARM64_NCAPS
+#define ARM64_NCAPS 66
+#endif
 #include <asm/cputype.h>
 #include <asm/hwcap.h>
 #include <asm/sysreg.h>

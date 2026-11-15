@@ -193,6 +193,12 @@ static int utf8_parse_version(const char *version, unsigned int *maj,
 	return 0;
 }
 
+/* Keep the public unicode_map layout frozen; teardown state is private. */
+struct unicode_map_rcu {
+	struct unicode_map map;
+	struct rcu_head rcu;
+};
+
 struct unicode_map *utf8_load(const char *version)
 {
 	struct unicode_map *um = NULL;
@@ -217,7 +223,7 @@ struct unicode_map *utf8_load(const char *version)
 		       (unicode_version & 0xff));
 	}
 
-	um = kzalloc(sizeof(struct unicode_map), GFP_KERNEL);
+	um = kzalloc(sizeof(struct unicode_map_rcu), GFP_KERNEL);
 	if (!um)
 		return ERR_PTR(-ENOMEM);
 
@@ -235,8 +241,12 @@ EXPORT_SYMBOL(utf8_load);
  */
 void utf8_unload(struct unicode_map *um)
 {
-	if (um)
-		kfree_rcu(um, rcu);
+	if (um) {
+		struct unicode_map_rcu *allocation =
+			container_of(um, struct unicode_map_rcu, map);
+
+		kfree_rcu(allocation, rcu);
+	}
 }
 EXPORT_SYMBOL(utf8_unload);
 

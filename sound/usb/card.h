@@ -89,7 +89,11 @@ struct snd_usb_endpoint {
 	struct snd_urb_ctx urb[MAX_URBS];
 
 	struct snd_usb_packet_info {
+#ifdef __GENKSYMS__
+		uint32_t packet_size[MAX_PACKS_HS];
+#else
 		int packet_size[MAX_PACKS_HS];
+#endif
 		int packets;
 	} next_packet[MAX_URBS];
 	unsigned int next_packet_head;	/* ring buffer offset to read */
@@ -100,6 +104,10 @@ struct snd_usb_endpoint {
 	unsigned long active_mask;	/* bitmask of active urbs */
 	unsigned long unlink_mask;	/* bitmask of unlinked urbs */
 	atomic_t submitted_urbs;	/* currently submitted urbs */
+#ifndef __GENKSYMS__
+	/* Occupy the existing four-byte hole before syncbuf. */
+	unsigned int max_urb_packs;
+#endif
 	char *syncbuf;			/* sync buffer for all sync URBs */
 	dma_addr_t sync_dma;		/* DMA address of syncbuf */
 
@@ -115,7 +123,6 @@ struct snd_usb_endpoint {
 	unsigned int phase;		/* phase accumulator */
 	unsigned int maxpacksize;	/* max packet size in bytes */
 	unsigned int maxframesize;      /* max packet size in frames */
-	unsigned int max_urb_packs;	/* packets allocated per data URB */
 	unsigned int max_urb_frames;	/* max URB size in frames */
 	unsigned int curpacksize;	/* current packet size in bytes (for capture) */
 	unsigned int curframesize;      /* current packet size in frames (for capture) */
