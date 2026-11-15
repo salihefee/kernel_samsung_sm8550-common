@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Package a checked Image using the fsrb/voltage AnyKernel3 installer.
 
-Usage: package-s23.py BUILD_DIR ANYKERNEL_DIR ABI_REPORT OUTPUT.zip
+Usage: package-s23.py BUILD_DIR ANYKERNEL_DIR ABI_REPORT OUTPUT.zip USB_LAYOUT_REPORT
 """
 from pathlib import Path
 import hashlib
@@ -10,7 +10,10 @@ import subprocess
 import sys
 import zipfile
 
-build, installer, report, output = map(Path, sys.argv[1:])
+build, installer, report, output, usb_report = map(Path, sys.argv[1:])
+usb_layout = json.loads(usb_report.read_text())
+if not all(item["passed"] for item in usb_layout):
+    raise SystemExit("Refusing to package: private USB ABI mismatch")
 audit = json.loads(report.read_text())
 if audit['crc_mismatches'] or audit['missing_symbols']:
     raise SystemExit('Refusing to package: vendor module ABI audit failed')
@@ -43,6 +46,7 @@ manifest = dict(
     module_count=audit['module_count'],
     kernel_import_checks=audit['kernel_import_checks'],
     hardware_boot_tested=False,
+    private_usb_layout_verified=True,
 )
 script = '''### AnyKernel3 -- S23 EZA1 KernelSU Next
 properties() { '
@@ -88,6 +92,7 @@ with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as arch
     archive.write(installer / 'LICENSE', 'LICENSE.AnyKernel3')
     archive.write(image, 'Image')
     archive.writestr('kernel.config', embedded)
+    archive.write(usb_report, 'usb-layout-checks.json')
     archive.writestr('build-manifest.json', json.dumps(manifest, indent=2) + '\n')
 with zipfile.ZipFile(output) as archive:
     assert archive.testzip() is None
