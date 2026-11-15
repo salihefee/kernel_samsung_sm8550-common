@@ -588,4 +588,9 @@ int input_ff_flush(struct input_dev *dev, struct file *file);
 int input_ff_create_memless(struct input_dev *dev, void *data,
 		int (*play_effect)(struct input_dev *, void *, struct ff_effect *));
 
+/* Samsung vendor input booster event registration. */
+struct notifier_block;
+int ib_notifier_register(struct notifier_block *nb);
+int ib_notifier_unregister(struct notifier_block *nb);
+
 #endif

@@ -18,6 +18,7 @@
 #include <linux/vmalloc.h>
 #include <linux/mm.h>
 #include <linux/module.h>
+#include <linux/notifier.h>
 #include <linux/init.h>
 #include <linux/input/mt.h>
 #include <linux/major.h>
@@ -297,12 +298,33 @@ static void evdev_pass_values(struct evdev_client *client,
 /*
  * Pass incoming events to all connected clients.
  */
+/* Samsung input_booster_lkm consumes synchronous event batches (event 1). */
+static ATOMIC_NOTIFIER_HEAD(ib_notifier_chain);
+
+int ib_notifier_register(struct notifier_block *nb)
+{
+	return atomic_notifier_chain_register(&ib_notifier_chain, nb);
+}
+EXPORT_SYMBOL(ib_notifier_register);
+
+int ib_notifier_unregister(struct notifier_block *nb)
+{
+	return atomic_notifier_chain_unregister(&ib_notifier_chain, nb);
+}
+EXPORT_SYMBOL(ib_notifier_unregister);
+
 static void evdev_events(struct input_handle *handle,
 			 const struct input_value *vals, unsigned int count)
 {
 	struct evdev *evdev = handle->private;
 	struct evdev_client *client;
 	ktime_t *ev_time = input_get_timestamp(handle->dev);
+	struct {
+		const struct input_value *vals;
+		int evt_cnt;
+	} ib_data = { vals, count };
+
+	atomic_notifier_call_chain(&ib_notifier_chain, 1, &ib_data);
 
 	rcu_read_lock();
 

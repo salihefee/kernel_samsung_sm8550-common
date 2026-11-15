@@ -636,7 +636,7 @@ static void __tty_hangup(struct tty_struct *tty, int exit_session)
 
 	tty_ldisc_hangup(tty, cons_filp != NULL);
 
-	wake_up_interruptible(&tty->break_wait);
+	wake_up_interruptible(&tty->write_wait);
 
 	spin_lock_irq(&tty->ctrl.lock);
 	clear_bit(TTY_THROTTLED, &tty->flags);
@@ -2494,7 +2494,8 @@ static int send_break(struct file *file, struct tty_struct *tty, unsigned int du
 	}
 
 	timeout = msecs_to_jiffies(duration);
-	timeout = wait_event_interruptible_timeout(tty->break_wait,
+	/* Share the existing queue to preserve the Android tty ABI. */
+	timeout = wait_event_interruptible_timeout(tty->write_wait,
 						   tty_hung_up_p(file),
 						   timeout);
 	/* return early on hangup only */
@@ -3129,7 +3130,6 @@ struct tty_struct *alloc_tty_struct(struct tty_driver *driver, int idx)
 	init_ldsem(&tty->ldisc_sem);
 	init_waitqueue_head(&tty->write_wait);
 	init_waitqueue_head(&tty->read_wait);
-	init_waitqueue_head(&tty->break_wait);
 	INIT_WORK(&tty->hangup_work, do_tty_hangup);
 	mutex_init(&tty->atomic_write_lock);
 	spin_lock_init(&tty->ctrl.lock);
