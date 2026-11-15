@@ -26,7 +26,7 @@ clang --version | head -1 | grep -q r450784e
 [[ -d "$FIRMWARE/vendor_dlkm" && -d "$VENDOR_RAMDISK/lib/modules" ]]
 [[ $(git -C KernelSU-Next rev-parse HEAD) == 4c706b5938665866ebe16944a481a7b91e3396af ]]
 
-exec 9>"$ROOT/.s23-final-build.lock"
+exec 9>"$ASSETS/.s23-final-build.lock"
 flock -n 9 || { echo 'Another final-build script is running.' >&2; exit 1; }
 # The earlier O2 build may still be running; do not run competing kernel builds.
 waiting=0
