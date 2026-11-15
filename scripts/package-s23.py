@@ -20,6 +20,8 @@ assert data[56:60] == b'ARM\x64', 'Expected uncompressed arm64 Image'
 assert len(data) < 100663296 - 4096, 'Image exceeds S911B boot partition'
 config = (build / '.config').read_text()
 assert '\nCONFIG_KSU=y\n' in config
+embedded = subprocess.check_output(['sh', 'scripts/extract-ikconfig', str(image)])
+assert embedded.decode() == config, 'Image embeds a different kernel configuration'
 release = (build / 'include/config/kernel.release').read_text().strip()
 
 def git(*args):
@@ -36,6 +38,8 @@ manifest = dict(
     optimization=(build / 's23-build-mode.txt').read_text().strip(),
     installer_source=git('-C', str(installer.resolve()), 'rev-parse', 'HEAD'),
     image_sha256=hashlib.sha256(data).hexdigest(),
+    config_sha256=hashlib.sha256(embedded).hexdigest(),
+    exports_sha256=hashlib.sha256((build / 'Module.symvers').read_bytes()).hexdigest(),
     module_count=audit['module_count'],
     kernel_import_checks=audit['kernel_import_checks'],
     hardware_boot_tested=False,
@@ -80,6 +84,7 @@ with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED, compresslevel=9) as arch
     archive.writestr('anykernel.sh', script)
     archive.write(installer / 'LICENSE', 'LICENSE.AnyKernel3')
     archive.write(image, 'Image')
+    archive.writestr('kernel.config', embedded)
     archive.writestr('build-manifest.json', json.dumps(manifest, indent=2) + '\n')
 with zipfile.ZipFile(output) as archive:
     assert archive.testzip() is None
