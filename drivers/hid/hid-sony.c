@@ -3087,7 +3087,8 @@ static void sony_remove(struct hid_device *hdev)
 	if (sc->quirks & (GHL_GUITAR_PS3WIIU | GHL_GUITAR_PS4)) {
 		/* poison, not kill: a pending timer must not re-submit during teardown */
 		usb_poison_urb(sc->ghl_urb);
-		timer_shutdown_sync(&sc->ghl_poke_timer);
+		/* Poison synchronizes the completion before deleting the timer. */
+		del_timer_sync(&sc->ghl_poke_timer);
 		usb_free_urb(sc->ghl_urb);
 	}
 
